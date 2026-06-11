@@ -118,8 +118,8 @@
 </head>
 <body>
 
-<div style="background:#2a2000;border-bottom:2px solid #F0B429;padding:12px 20px;text-align:center;font-family:-apple-system,sans-serif;font-size:13px;color:#F0B429;line-height:1.5;">
-  ⚠️ Se aparecer uma tela pedindo permissão em inglês, clique em <strong>"Allow"</strong> para continuar.
+<div style="background:#1a1a1a;border-bottom:1px solid rgba(240,180,41,0.2);padding:12px 20px;text-align:center;font-family:-apple-system,sans-serif;font-size:13px;color:#999999;line-height:1.5;">
+  💡 Caso queira trazer um item que não está na lista, verifique se um colega já não escolheu antes de adicionar.
 </div>
 <div class="topbar">
   <span class="topbar-logo">Solare Invest</span>
@@ -340,14 +340,25 @@
     document.getElementById('availableCount').textContent = available.length;
     document.getElementById('takenCount').textContent = taken.length;
 
-    document.getElementById('availableList').innerHTML = available.length === 0
-      ? '<div class="empty">Todos os itens já foram escolhidos 🎉</div>'
-      : available.map(item => `
+    const availableCards = available.map(item => `
         <div class="item-card">
           <span class="item-name">${item}</span>
           ${adminOpen ? `<button class="btn-remove" onclick="removeItem('${item}')">✕</button>` : ''}
           <button class="btn-claim" onclick="claimItem('${item}')">Eu trago</button>
         </div>`).join('');
+
+    const outrosCard = `
+        <div class="item-card" style="border-style:dashed;">
+          <span class="item-name" style="color:var(--text-secondary);">Outro item...</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input id="customItemInput" type="text" placeholder="O que você vai trazer?" style="background:#111;border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:7px 12px;color:#fff;font-size:13px;outline:none;width:180px;" />
+            <button onclick="addCustomItem()" class="btn-claim">Eu trago</button>
+          </div>
+        </div>`;
+
+    document.getElementById('availableList').innerHTML = available.length === 0
+      ? '<div class="empty">Todos os itens já foram escolhidos 🎉</div>' + outrosCard
+      : availableCards + outrosCard;
 
     document.getElementById('takenList').innerHTML = taken.length === 0
       ? '<div class="empty">Ninguém escolheu nada ainda.</div>'
@@ -366,6 +377,21 @@
   document.getElementById('newItemInput').addEventListener('keydown', e => { if (e.key === 'Enter') addItem(); });
   document.getElementById('adminCodeInput').addEventListener('keydown', e => { if (e.key === 'Enter') confirmAdmin(); });
   document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === document.getElementById('modalOverlay')) closeModal(); });
+
+  async function addCustomItem() {
+    const input = document.getElementById('customItemInput');
+    const val = input.value.trim();
+    const name = getName();
+    if (!val) { showToast('Digite o item antes de adicionar.', 'error'); return; }
+    if (!name) { showToast('Coloca seu nome primeiro!', 'error'); return; }
+    if (data.items.includes(val)) { showToast('Esse item já está na lista!', 'error'); return; }
+    data.items.push(val);
+    data.claims[val] = name;
+    await saveData();
+    render();
+    input.value = '';
+    showToast(`"${val}" adicionado e garantido por você!`, 'success');
+  }
 
   loadData();
   setInterval(loadData, 5000);
