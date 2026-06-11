@@ -90,7 +90,6 @@
 </style>
 </head>
 <body>
-
 <div class="topbar">
   <span class="topbar-logo">Solare Invest</span>
   <div class="topbar-dot"></div>
@@ -99,24 +98,20 @@
 <div class="info-bar">
   💡 Caso queira trazer um item que não está na lista, verifique se um colega já não escolheu antes de adicionar.
 </div>
-
 <div class="wrapper">
   <div class="hero">
     <div class="hero-tag">Festa Junina 2026</div>
     <div class="hero-title">Quem traz o quê? 🌽</div>
     <div class="hero-sub">Escolha o que você vai trazer. Cada item só pode ser pego por uma pessoa. Primeiro a chegar, primeiro a garantir.</div>
   </div>
-
   <div class="name-block">
     <div class="field-label">Seu nome</div>
     <input class="name-input" id="nameInput" type="text" placeholder="Digite seu nome antes de escolher" />
   </div>
-
   <div class="status-bar">
     <span class="status-txt" id="statusTxt">Carregando...</span>
     <button class="btn-refresh" onclick="loadData()">↻ Atualizar agora</button>
   </div>
-
   <div class="admin-panel" id="adminPanel">
     <div class="admin-title">Painel Admin</div>
     <div class="admin-row">
@@ -125,7 +120,6 @@
     </div>
     <button class="btn-reset" onclick="resetAll()">Resetar todos os nomes</button>
   </div>
-
   <div class="section">
     <div class="section-header">
       <span class="section-label">Disponível</span>
@@ -133,7 +127,6 @@
     </div>
     <div id="availableList"><div class="empty">Carregando itens...</div></div>
   </div>
-
   <div class="section">
     <div class="section-header">
       <span class="section-label">Já garantido</span>
@@ -141,10 +134,8 @@
     </div>
     <div id="takenList"></div>
   </div>
-
   <div class="footer-note" id="footerNote" onclick="handleFooterClick()">Lista compartilhada em tempo real · Solare Invest 2026</div>
 </div>
-
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-title">Acesso Admin</div>
@@ -157,35 +148,28 @@
     </div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
-
 <script>
   const FB_URL = 'https://arraial-2026-default-rtdb.firebaseio.com/arraia.json';
   const ADMIN_CODE = 'solare2026';
   const DEFAULT_ITEMS = ['Arroz Doce','Bolo de Milho','Cachorro Quente','Pipoca Salgada','Pipoca Doce','Paçoca','Churros','Salgadinhos'];
-
   let data = { items: [...DEFAULT_ITEMS], claims: {} };
   let adminOpen = false;
   let footerClicks = 0;
   let footerTimer = null;
   let isSaving = false;
-
   const getName = () => document.getElementById('nameInput').value.trim();
-
   function showToast(msg, type = '') {
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.className = 'toast show ' + type;
     setTimeout(() => { t.className = 'toast'; }, 3000);
   }
-
   function setStatus(msg, syncing = false) {
     const el = document.getElementById('statusTxt');
     el.textContent = msg;
     el.className = 'status-txt' + (syncing ? ' syncing' : '');
   }
-
   function handleFooterClick() {
     footerClicks++;
     clearTimeout(footerTimer);
@@ -196,13 +180,11 @@
       setTimeout(() => document.getElementById('adminCodeInput').focus(), 100);
     }
   }
-
   function closeModal() {
     document.getElementById('modalOverlay').className = 'modal-overlay';
     document.getElementById('adminCodeInput').value = '';
     document.getElementById('modalError').style.display = 'none';
   }
-
   function confirmAdmin() {
     const code = document.getElementById('adminCodeInput').value;
     if (code === ADMIN_CODE) {
@@ -216,7 +198,6 @@
       document.getElementById('adminCodeInput').value = '';
     }
   }
-
   async function loadData(silent = false) {
     if (isSaving) return;
     if (!silent) setStatus('Atualizando...', true);
@@ -234,7 +215,6 @@
       if (!silent) setStatus('Erro ao atualizar');
     }
   }
-
   async function saveData() {
     isSaving = true;
     try {
@@ -249,7 +229,6 @@
       isSaving = false;
     }
   }
-
   async function claimItem(item) {
     const name = getName();
     if (!name) { showToast('Coloca seu nome primeiro!', 'error'); return; }
@@ -264,7 +243,6 @@
     render();
     showToast(`"${item}" garantido!`, 'success');
   }
-
   async function releaseItem(item) {
     const name = getName();
     if (data.claims[item] !== name) { showToast('Só quem pegou pode liberar.', 'error'); return; }
@@ -273,7 +251,6 @@
     render();
     showToast(`"${item}" liberado.`);
   }
-
   async function addItem() {
     const input = document.getElementById('newItemInput');
     const val = input.value.trim();
@@ -285,7 +262,6 @@
     input.value = '';
     showToast(`"${val}" adicionado.`, 'success');
   }
-
   async function addCustomItem() {
     const input = document.getElementById('customItemInput');
     const val = input.value.trim();
@@ -301,7 +277,6 @@
     input.value = '';
     showToast(`"${val}" adicionado e garantido!`, 'success');
   }
-
   async function removeItem(item) {
     if (!confirm(`Remover "${item}"?`)) return;
     data.items = data.items.filter(i => i !== item);
@@ -309,7 +284,6 @@
     await saveData();
     render();
   }
-
   async function resetAll() {
     if (!confirm('Resetar todos os nomes?')) return;
     data.claims = {};
@@ -317,33 +291,27 @@
     render();
     showToast('Nomes resetados.', 'success');
   }
-
   function render() {
     const available = data.items.filter(i => !data.claims[i]);
     const taken = data.items.filter(i => data.claims[i]);
     const myName = getName();
-
     document.getElementById('availableCount').textContent = available.length;
     document.getElementById('takenCount').textContent = taken.length;
-
     const availableCards = available.map(item => `
       <div class="item-card">
         <span class="item-name">${item}</span>
         ${adminOpen ? `<button class="btn-remove" onclick="removeItem('${item}')">✕</button>` : ''}
         <button class="btn-claim" onclick="claimItem('${item}')">Eu trago</button>
       </div>`).join('');
-
     const outrosCard = `
       <div class="item-card custom">
         <span class="item-name" style="color:var(--text-secondary);font-size:13px;">Outro item</span>
         <input class="custom-input" id="customItemInput" type="text" placeholder="O que você vai trazer?" />
         <button class="btn-claim" onclick="addCustomItem()">Eu trago</button>
       </div>`;
-
     document.getElementById('availableList').innerHTML = available.length === 0
       ? '<div class="empty">Todos os itens já foram escolhidos 🎉</div>' + outrosCard
       : availableCards + outrosCard;
-
     document.getElementById('takenList').innerHTML = taken.length === 0
       ? '<div class="empty">Ninguém escolheu nada ainda.</div>'
       : taken.map(item => `
@@ -356,17 +324,14 @@
           }
         </div>`).join('');
   }
-
   document.getElementById('nameInput').addEventListener('input', render);
-  document.getElementById('newItemInput') && document.getElementById('newItemInput').addEventListener('keydown', e => { if (e.key === 'Enter') addItem(); });
   document.getElementById('adminCodeInput').addEventListener('keydown', e => { if (e.key === 'Enter') confirmAdmin(); });
   document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === document.getElementById('modalOverlay')) closeModal(); });
-
   loadData();
   setInterval(() => {
-    const customFocused = document.activeElement && document.activeElement.id === 'customItemInput';
-    const nameFocused = document.activeElement && document.activeElement.id === 'nameInput';
-    if (!customFocused && !nameFocused) loadData(true);
+    const active = document.activeElement;
+    if (active && (active.id === 'customItemInput' || active.id === 'nameInput' || active.id === 'newItemInput')) return;
+    loadData(true);
   }, 5000);
 </script>
 </body>
