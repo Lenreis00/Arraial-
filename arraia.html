@@ -188,12 +188,15 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const BIN_ID = '6a2a120ff5f4af5e29dc1133';
-  const API_KEY = '$2a$10$9GZkubC93d8Ht4jwFapOguUaR7QoF.x2HOWWvuuQQ77edMjwXONl2';
-  const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+  const FB_URL = 'https://arraial-2026-default-rtdb.firebaseio.com/arraia.json';
   const ADMIN_CODE = 'solare2026';
 
-  let data = { items: [], claims: {} };
+  const DEFAULT_ITEMS = [
+    'Arroz Doce', 'Bolo de Milho', 'Cachorro Quente',
+    'Pipoca Salgada', 'Pipoca Doce', 'Paçoca', 'Churros', 'Salgadinhos'
+  ];
+
+  let data = { items: DEFAULT_ITEMS, claims: {} };
   let adminOpen = false;
   let footerClicks = 0;
   let footerTimer = null;
@@ -249,11 +252,13 @@
     if (isSaving) return;
     if (!silent) setStatus('Atualizando...', true);
     try {
-      const res = await fetch(`${BASE_URL}/latest`, {
-        headers: { 'X-Master-Key': API_KEY }
-      });
+      const res = await fetch(FB_URL);
       const json = await res.json();
-      data = json.record;
+      if (json && json.items) {
+        data = json;
+      } else {
+        await saveData();
+      }
       render();
       if (!silent) setStatus('Atualizado agora');
     } catch (e) {
@@ -264,12 +269,9 @@
   async function saveData() {
     isSaving = true;
     try {
-      await fetch(BASE_URL, {
+      await fetch(FB_URL, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Master-Key': API_KEY
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
     } catch (e) {
