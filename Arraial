@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Arraiá da Firma</title>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #1A1A1A;
+    --bg-card: #222222;
+    --bg-card-hover: #282828;
+    --gold: #F0B429;
+    --gold-dim: rgba(240, 180, 41, 0.1);
+    --gold-border: rgba(240, 180, 41, 0.25);
+    --text-primary: #FFFFFF;
+    --text-secondary: #999999;
+    --text-muted: #555555;
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.14);
+    --green: #4CAF7D;
+    --green-dim: rgba(76, 175, 125, 0.1);
+    --red: #E05252;
+    --red-dim: rgba(224, 82, 82, 0.1);
+    --radius: 16px;
+  }
+
+  html, body { background: var(--bg); color: var(--text-primary); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height: 100vh; }
+
+  .topbar { background: #111111; border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; gap: 10px; }
+  .topbar-logo { font-size: 13px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.06em; text-transform: uppercase; }
+  .topbar-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--gold); }
+  .topbar-event { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+
+  .wrapper { max-width: 620px; margin: 0 auto; padding: 40px 20px 72px; }
+
+  .hero { margin-bottom: 40px; }
+  .hero-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--gold-dim); border: 1px solid var(--gold-border); border-radius: 100px; padding: 5px 12px; font-size: 11px; font-weight: 600; color: var(--gold); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 18px; }
+  .hero-tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+  .hero-title { font-size: 38px; font-weight: 900; line-height: 1.1; letter-spacing: -0.02em; color: var(--text-primary); margin-bottom: 12px; }
+  .hero-sub { font-size: 15px; font-weight: 400; color: var(--text-secondary); line-height: 1.6; max-width: 480px; }
+
+  .name-block { background: var(--bg-card); border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 20px; margin-bottom: 12px; }
+  .field-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 10px; }
+  .name-input { width: 100%; background: #111111; border: 1.5px solid var(--border-strong); border-radius: 10px; padding: 13px 16px; color: var(--text-primary); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 500; outline: none; transition: border-color 0.2s; }
+  .name-input:focus { border-color: var(--gold); }
+  .name-input::placeholder { color: var(--text-muted); font-weight: 400; }
+
+  .status-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; margin-bottom: 28px; border-bottom: 1px solid var(--border); }
+  .status-txt { font-size: 12px; color: var(--text-muted); }
+  .status-txt.syncing { color: var(--gold); }
+  .btn-refresh { background: none; border: none; color: var(--text-muted); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; padding: 4px 10px; border-radius: 6px; transition: color 0.15s, background 0.15s; }
+  .btn-refresh:hover { color: var(--gold); background: var(--gold-dim); }
+
+  .section { margin-bottom: 32px; }
+  .section-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+  .section-label { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+  .section-count { font-size: 12px; font-weight: 600; color: var(--text-muted); background: var(--border); padding: 2px 8px; border-radius: 20px; }
+
+  .item-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 15px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; transition: border-color 0.15s, background 0.15s; }
+  .item-card:hover { background: var(--bg-card-hover); border-color: var(--border-strong); }
+  .item-card.taken { background: var(--green-dim); border-color: rgba(76,175,125,0.2); }
+
+  .item-name { font-size: 14px; font-weight: 500; color: var(--text-primary); flex: 1; }
+  .item-name.faded { color: var(--text-secondary); font-weight: 400; }
+
+  .item-taker { font-size: 12px; font-weight: 600; color: var(--green); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .dot-green { width: 5px; height: 5px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+  .btn-claim { background: var(--gold); border: none; border-radius: 8px; color: #111111; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; font-weight: 700; padding: 8px 16px; cursor: pointer; transition: opacity 0.15s; white-space: nowrap; }
+  .btn-claim:hover { opacity: 0.88; }
+
+  .btn-release { background: var(--red-dim); border: 1px solid rgba(224,82,82,0.25); border-radius: 8px; color: var(--red); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; font-weight: 600; padding: 7px 14px; cursor: pointer; white-space: nowrap; }
+
+  .admin-panel { background: var(--bg-card); border: 1px dashed var(--gold-border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; display: none; }
+  .admin-panel.open { display: block; }
+  .admin-title { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+  .admin-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .admin-input { flex: 1; background: #111111; border: 1px solid var(--border-strong); border-radius: 8px; padding: 10px 13px; color: var(--text-primary); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; outline: none; }
+  .admin-input::placeholder { color: var(--text-muted); }
+  .btn-add { background: var(--gold-dim); border: 1px solid var(--gold-border); border-radius: 8px; color: var(--gold); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 700; padding: 10px 16px; cursor: pointer; white-space: nowrap; }
+  .btn-reset { background: var(--red-dim); border: 1px solid rgba(224,82,82,0.2); border-radius: 8px; color: var(--red); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; font-weight: 600; padding: 8px 14px; cursor: pointer; }
+  .btn-remove { background: none; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer; padding: 0 6px; line-height: 1; transition: color 0.15s; }
+  .btn-remove:hover { color: var(--red); }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #222222; border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 28px; width: 90%; max-width: 360px; }
+  .modal-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+  .modal-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
+  .modal-input { width: 100%; background: #111111; border: 1.5px solid var(--border-strong); border-radius: 10px; padding: 12px 14px; color: var(--text-primary); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; outline: none; margin-bottom: 14px; transition: border-color 0.2s; letter-spacing: 0.2em; }
+  .modal-input:focus { border-color: var(--gold); }
+  .modal-input::placeholder { color: var(--text-muted); letter-spacing: 0; }
+  .modal-error { font-size: 12px; color: var(--red); margin-bottom: 12px; display: none; }
+  .modal-btns { display: flex; gap: 8px; }
+  .btn-modal-confirm { flex: 1; background: var(--gold); border: none; border-radius: 8px; color: #111; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 700; padding: 11px; cursor: pointer; }
+  .btn-modal-cancel { background: none; border: 1px solid var(--border-strong); border-radius: 8px; color: var(--text-secondary); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; padding: 11px 16px; cursor: pointer; }
+
+  .empty { text-align: center; padding: 28px 16px; color: var(--text-muted); font-size: 13px; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: #2A2A2A; border: 1px solid var(--border-strong); border-radius: 12px; padding: 12px 20px; font-size: 13px; font-weight: 500; color: var(--text-primary); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); z-index: 999; white-space: nowrap; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error { border-color: rgba(224,82,82,0.4); color: var(--red); }
+  .toast.success { border-color: rgba(240,180,41,0.4); color: var(--gold); }
+
+  .footer-note { text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 40px; letter-spacing: 0.04em; cursor: default; user-select: none; }
+
+  .loading { text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 14px; }
+
+  @media (max-width: 480px) {
+    .hero-title { font-size: 28px; }
+    .item-card { flex-wrap: wrap; gap: 10px; }
+    .btn-claim, .btn-release { width: 100%; text-align: center; padding: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div style="background:#1a1a1a;border-bottom:1px solid rgba(240,180,41,0.2);padding:12px 20px;text-align:center;font-family:-apple-system,sans-serif;font-size:13px;color:#999999;line-height:1.5;">
+  💡 Caso queira trazer um item que não está na lista, verifique se um colega já não escolheu antes de adicionar.
+</div>
+<div class="topbar">
+  <span class="topbar-logo">Solare Invest</span>
+  <div class="topbar-dot"></div>
+  <span class="topbar-event">Arraiá da Firma</span>
+</div>
+
+<div class="wrapper">
+  <div class="hero">
+    <div class="hero-tag">Festa Junina 2026</div>
+    <div class="hero-title">Quem traz o quê? 🌽</div>
+    <div class="hero-sub">Escolha o que você vai trazer. Cada item só pode ser pego por uma pessoa. Primeiro a chegar, primeiro a garantir.</div>
+  </div>
+
+  <div class="name-block">
+    <div class="field-label">Seu nome</div>
+    <input class="name-input" id="nameInput" type="text" placeholder="Digite seu nome antes de escolher" />
+  </div>
+
+  <div class="status-bar">
+    <span class="status-txt" id="statusTxt">Carregando...</span>
+    <button class="btn-refresh" onclick="loadData()">↻ Atualizar agora</button>
+  </div>
+
+  <div class="admin-panel" id="adminPanel">
+    <div class="admin-title">Painel Admin</div>
+    <div class="admin-row">
+      <input class="admin-input" id="newItemInput" type="text" placeholder="Novo item..." />
+      <button class="btn-add" onclick="addItem()">+ Add</button>
+    </div>
+    <button class="btn-reset" onclick="resetAll()">Resetar todos os nomes</button>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-label">Disponível</span>
+      <span class="section-count" id="availableCount">0</span>
+    </div>
+    <div id="availableList"><div class="loading">Carregando itens...</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-label">Já garantido</span>
+      <span class="section-count" id="takenCount">0</span>
+    </div>
+    <div id="takenList"></div>
+  </div>
+
+  <div class="footer-note" id="footerNote" onclick="handleFooterClick()">Lista compartilhada em tempo real · Solare Invest 2026</div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title">Acesso Admin</div>
+    <div class="modal-sub">Digite o código para continuar</div>
+    <input class="modal-input" id="adminCodeInput" type="password" placeholder="Código" maxlength="20" />
+    <div class="modal-error" id="modalError">Código incorreto.</div>
+    <div class="modal-btns">
+      <button class="btn-modal-confirm" onclick="confirmAdmin()">Entrar</button>
+      <button class="btn-modal-cancel" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const FB_URL = 'https://arraial-2026-default-rtdb.firebaseio.com/arraia.json';
+  const ADMIN_CODE = 'solare2026';
+
+  const DEFAULT_ITEMS = [
+    'Arroz Doce', 'Bolo de Milho', 'Cachorro Quente',
+    'Pipoca Salgada', 'Pipoca Doce', 'Paçoca', 'Churros', 'Salgadinhos'
+  ];
+
+  let data = { items: DEFAULT_ITEMS, claims: {} };
+  let adminOpen = false;
+  let footerClicks = 0;
+  let footerTimer = null;
+  let isSaving = false;
+
+  const getName = () => document.getElementById('nameInput').value.trim();
+
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    setTimeout(() => { t.className = 'toast'; }, 3000);
+  }
+
+  function setStatus(msg, syncing = false) {
+    const el = document.getElementById('statusTxt');
+    el.textContent = msg;
+    el.className = 'status-txt' + (syncing ? ' syncing' : '');
+  }
+
+  function handleFooterClick() {
+    footerClicks++;
+    clearTimeout(footerTimer);
+    footerTimer = setTimeout(() => { footerClicks = 0; }, 800);
+    if (footerClicks >= 3) {
+      footerClicks = 0;
+      document.getElementById('modalOverlay').className = 'modal-overlay open';
+      setTimeout(() => document.getElementById('adminCodeInput').focus(), 100);
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').className = 'modal-overlay';
+    document.getElementById('adminCodeInput').value = '';
+    document.getElementById('modalError').style.display = 'none';
+  }
+
+  function confirmAdmin() {
+    const code = document.getElementById('adminCodeInput').value;
+    if (code === ADMIN_CODE) {
+      adminOpen = !adminOpen;
+      document.getElementById('adminPanel').className = 'admin-panel' + (adminOpen ? ' open' : '');
+      closeModal();
+      render();
+      showToast(adminOpen ? 'Admin ativado.' : 'Admin desativado.', 'success');
+    } else {
+      document.getElementById('modalError').style.display = 'block';
+      document.getElementById('adminCodeInput').value = '';
+    }
+  }
+
+  async function loadData(silent = false) {
+    if (isSaving) return;
+    if (!silent) setStatus('Atualizando...', true);
+    try {
+      const res = await fetch(FB_URL);
+      const json = await res.json();
+      if (json && json.items) {
+        data = { items: json.items, claims: json.claims || {} };
+      } else {
+        await saveData();
+      }
+      render();
+      if (!silent) setStatus('Atualizado agora');
+    } catch (e) {
+      if (!silent) setStatus('Erro ao atualizar');
+    }
+  }
+
+  async function saveData() {
+    isSaving = true;
+    try {
+      await fetch(FB_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    } catch (e) {
+      showToast('Erro ao salvar.', 'error');
+    } finally {
+      isSaving = false;
+    }
+  }
+
+  async function claimItem(item) {
+    const name = getName();
+    if (!name) { showToast('Coloca seu nome primeiro!', 'error'); return; }
+    await loadData();
+    if (data.claims[item]) {
+      showToast(`"${item}" já foi pego por ${data.claims[item]}!`, 'error');
+      return;
+    }
+    data.claims[item] = name;
+    await saveData();
+    render();
+    showToast(`"${item}" garantido!`, 'success');
+  }
+
+  async function releaseItem(item) {
+    const name = getName();
+    if (data.claims[item] !== name) { showToast('Só quem pegou pode liberar.', 'error'); return; }
+    delete data.claims[item];
+    await saveData();
+    render();
+    showToast(`"${item}" liberado.`);
+  }
+
+  async function addItem() {
+    const input = document.getElementById('newItemInput');
+    const val = input.value.trim();
+    if (!val) return;
+    if (data.items.includes(val)) { showToast('Item já existe.', 'error'); return; }
+    data.items.push(val);
+    await saveData();
+    render();
+    input.value = '';
+    showToast(`"${val}" adicionado.`, 'success');
+  }
+
+  async function removeItem(item) {
+    if (!confirm(`Remover "${item}"?`)) return;
+    data.items = data.items.filter(i => i !== item);
+    delete data.claims[item];
+    await saveData();
+    render();
+  }
+
+  async function resetAll() {
+    if (!confirm('Resetar todos os nomes?')) return;
+    data.claims = {};
+    await saveData();
+    render();
+    showToast('Nomes resetados.', 'success');
+  }
+
+  function render() {
+    const available = data.items.filter(i => !data.claims[i]);
+    const taken = data.items.filter(i => data.claims[i]);
+    const myName = getName();
+
+    document.getElementById('availableCount').textContent = available.length;
+    document.getElementById('takenCount').textContent = taken.length;
+
+    const availableCards = available.map(item => `
+        <div class="item-card">
+          <span class="item-name">${item}</span>
+          ${adminOpen ? `<button class="btn-remove" onclick="removeItem('${item}')">✕</button>` : ''}
+          <button class="btn-claim" onclick="claimItem('${item}')">Eu trago</button>
+        </div>`).join('');
+
+    const outrosCard = `
+        <div class="item-card" style="border-style:dashed;">
+          <span class="item-name" style="color:var(--text-secondary);">Outro item...</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input id="customItemInput" type="text" placeholder="O que você vai trazer?" style="background:#111;border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:7px 12px;color:#fff;font-size:13px;outline:none;width:180px;" />
+            <button onclick="addCustomItem()" class="btn-claim">Eu trago</button>
+          </div>
+        </div>`;
+
+    document.getElementById('availableList').innerHTML = available.length === 0
+      ? '<div class="empty">Todos os itens já foram escolhidos 🎉</div>' + outrosCard
+      : availableCards + outrosCard;
+
+    document.getElementById('takenList').innerHTML = taken.length === 0
+      ? '<div class="empty">Ninguém escolheu nada ainda.</div>'
+      : taken.map(item => `
+        <div class="item-card taken">
+          <span class="item-name faded">${item}</span>
+          <span class="item-taker"><span class="dot-green"></span>${data.claims[item]}</span>
+          ${data.claims[item] === myName
+            ? `<button class="btn-release" onclick="releaseItem('${item}')">Liberar</button>`
+            : (adminOpen ? `<button class="btn-remove" onclick="removeItem('${item}')">✕</button>` : '')
+          }
+        </div>`).join('');
+  }
+
+  document.getElementById('nameInput').addEventListener('input', render);
+  document.getElementById('newItemInput').addEventListener('keydown', e => { if (e.key === 'Enter') addItem(); });
+  document.getElementById('adminCodeInput').addEventListener('keydown', e => { if (e.key === 'Enter') confirmAdmin(); });
+  document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === document.getElementById('modalOverlay')) closeModal(); });
+
+  async function addCustomItem() {
+    const input = document.getElementById('customItemInput');
+    const val = input.value.trim();
+    const name = getName();
+    if (!val) { showToast('Digite o item antes de adicionar.', 'error'); return; }
+    if (!name) { showToast('Coloca seu nome primeiro!', 'error'); return; }
+    if (data.items.includes(val)) { showToast('Esse item já está na lista!', 'error'); return; }
+    data.items.push(val);
+    data.claims[val] = name;
+    await saveData();
+    render();
+    input.value = '';
+    showToast(`"${val}" adicionado e garantido por você!`, 'success');
+  }
+
+  loadData();
+  setInterval(loadData, 5000);
+</script>
+</body>
+</html>
