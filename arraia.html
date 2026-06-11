@@ -247,6 +247,10 @@
     const name = getName();
     if (data.claims[item] !== name) { showToast('Só quem pegou pode liberar.', 'error'); return; }
     delete data.claims[item];
+    const isDefault = DEFAULT_ITEMS.some(i => i.toLowerCase() === item.toLowerCase());
+    if (!isDefault) {
+      data.items = data.items.filter(i => i !== item);
+    }
     await saveData();
     render();
     showToast(`"${item}" liberado.`);
@@ -255,7 +259,7 @@
     const input = document.getElementById('newItemInput');
     const val = input.value.trim();
     if (!val) return;
-    if (data.items.includes(val)) { showToast('Item já existe.', 'error'); return; }
+    if (data.items.some(i => i.toLowerCase() === val.toLowerCase())) { showToast('Item já existe.', 'error'); return; }
     data.items.push(val);
     await saveData();
     render();
@@ -269,7 +273,7 @@
     if (!val) { showToast('Digite o item antes de adicionar.', 'error'); return; }
     if (!name) { showToast('Coloca seu nome primeiro!', 'error'); return; }
     await loadData(true);
-    if (data.items.includes(val)) { showToast('Esse item já está na lista!', 'error'); return; }
+    if (data.items.some(i => i.toLowerCase() === val.toLowerCase())) { showToast('Esse item já está na lista!', 'error'); return; }
     data.items.push(val);
     data.claims[val] = name;
     await saveData();
@@ -297,6 +301,8 @@
     const myName = getName();
     document.getElementById('availableCount').textContent = available.length;
     document.getElementById('takenCount').textContent = taken.length;
+    const customEl = document.getElementById('customItemInput');
+    const customVal = customEl ? customEl.value : '';
     const availableCards = available.map(item => `
       <div class="item-card">
         <span class="item-name">${item}</span>
@@ -306,7 +312,7 @@
     const outrosCard = `
       <div class="item-card custom">
         <span class="item-name" style="color:var(--text-secondary);font-size:13px;">Outro item</span>
-        <input class="custom-input" id="customItemInput" type="text" placeholder="O que você vai trazer?" />
+        <input class="custom-input" id="customItemInput" type="text" placeholder="O que você vai trazer?" value="${customVal}" />
         <button class="btn-claim" onclick="addCustomItem()">Eu trago</button>
       </div>`;
     document.getElementById('availableList').innerHTML = available.length === 0
