@@ -118,6 +118,9 @@
 </head>
 <body>
 
+<div style="background:#2a2000;border-bottom:2px solid #F0B429;padding:12px 20px;text-align:center;font-family:-apple-system,sans-serif;font-size:13px;color:#F0B429;line-height:1.5;">
+  ⚠️ Se aparecer uma tela pedindo permissão em inglês, clique em <strong>"Allow"</strong> para continuar.
+</div>
 <div class="topbar">
   <span class="topbar-logo">Solare Invest</span>
   <div class="topbar-dot"></div>
@@ -185,18 +188,16 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const STORAGE_KEY = 'arraia-solare-2026';
+  const BIN_ID = '6a2a120ff5f4af5e29dc1133';
+  const API_KEY = '$2a$10$9GZkubC93d8Ht4jwFapOguUaR7QoF.x2HOWWvuuQQ77edMjwXONl2';
+  const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
   const ADMIN_CODE = 'solare2026';
-
-  const DEFAULT_ITEMS = [
-    'Arroz Doce', 'Bolo de Milho', 'Cachorro Quente',
-    'Pipoca Salgada', 'Pipoca Doce', 'Paçoca', 'Churros', 'Salgadinhos'
-  ];
 
   let data = { items: [], claims: {} };
   let adminOpen = false;
   let footerClicks = 0;
   let footerTimer = null;
+  let isSaving = false;
 
   const getName = () => document.getElementById('nameInput').value.trim();
 
@@ -244,30 +245,37 @@
     }
   }
 
-  async function loadData() {
-    setStatus('Atualizando...', true);
+  async function loadData(silent = false) {
+    if (isSaving) return;
+    if (!silent) setStatus('Atualizando...', true);
     try {
-      const result = await window.storage.get(STORAGE_KEY, true);
-      if (result && result.value) {
-        data = JSON.parse(result.value);
-      } else {
-        data = { items: DEFAULT_ITEMS, claims: {} };
-        await window.storage.set(STORAGE_KEY, JSON.stringify(data), true);
-      }
+      const res = await fetch(`${BASE_URL}/latest`, {
+        headers: { 'X-Master-Key': API_KEY }
+      });
+      const json = await res.json();
+      data = json.record;
       render();
-      setStatus('Atualizado agora');
+      if (!silent) setStatus('Atualizado agora');
     } catch (e) {
-      data = { items: DEFAULT_ITEMS, claims: {} };
-      render();
-      setStatus('Atualizado agora');
+      if (!silent) setStatus('Erro ao atualizar');
     }
   }
 
   async function saveData() {
+    isSaving = true;
     try {
-      await window.storage.set(STORAGE_KEY, JSON.stringify(data), true);
+      await fetch(BASE_URL, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': API_KEY
+        },
+        body: JSON.stringify(data)
+      });
     } catch (e) {
       showToast('Erro ao salvar.', 'error');
+    } finally {
+      isSaving = false;
     }
   }
 
