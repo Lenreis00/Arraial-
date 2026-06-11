@@ -255,7 +255,7 @@
       const res = await fetch(FB_URL);
       const json = await res.json();
       if (json && json.items) {
-        data = json;
+        data = { items: json.items, claims: json.claims || {} };
       } else {
         await saveData();
       }
